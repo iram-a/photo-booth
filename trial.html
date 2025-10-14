@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spooky Sweet Snaps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;500;700&family=Nosifier&display=swap" rel="stylesheet"/>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    .font-creepster {
+      font-family: 'Creepster', cursive;
+    }
+
+    .frame-container {
+      max-width: 1070px;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .frame-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: rotate(90deg);
+      pointer-events: none;
+      z-index: 35;
+    }
+
+    #video-feed {
+      position: absolute;
+      top: 50%;
+      left: 49%;
+      width: 50%;
+      height: 42%;
+      object-fit: cover;
+      transform: translate(-50%, -50%) scaleX(-1);
+      border-radius: 50%;
+      z-index: 40;
+      background-color: #1a1a1a;
+    }
+
+    .action-button {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+    }
+
+    .action-button img {
+      width: 100%;
+      height: auto;
+    }
+
+    .action-button:hover:not(:disabled) {
+      transform: scale(1.07);
+      filter: drop-shadow(0 0 10px rgba(255, 180, 80, 0.7));
+    }
+
+    .action-button:active:not(:disabled) {
+      transform: scale(1.02);
+    }
+
+    .action-button:disabled {
+      cursor: not-allowed;
+      filter: grayscale(80%) opacity(0.5);
+    }
+
+    #photo-strip {
+      position: relative;
+      width: 120%;
+      height: 85vh;
+      margin-top: -5vh;
+      margin-right: -10%;
+    }
+
+    .photo-wrapper {
+      position: absolute;
+      width: 120%;
+      height: 28%;
+      left: -10%;
+      overflow: hidden;
+    }
+
+    #photo-wrapper-1 { top: 0%; }
+    #photo-wrapper-2 { top: 32%; }
+    #photo-wrapper-3 { top: 64%; }
+
+    .photo-slot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 52%;
+      height: 92%;
+      object-fit: cover;
+      transform: translate(-50%, -50%) scaleX(-1);
+      border-radius: 4px;
+      z-index: 1;
+      background-color: #000;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .photo-frame-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 140%;
+      height: 130%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 2;
+      filter: drop-shadow(0 0 15px rgba(255, 180, 80, 0.2));
+      object-fit: contain;
+    }
+
+    .floating-witch {
+      position: absolute;
+      width: 350px;
+      right: 580px;
+      top: 50%;
+      z-index: 45;
+      animation: floatWitch 6s ease-in-out infinite;
+    }
+
+    @keyframes floatWitch {
+      0%, 100% {
+        transform: translateY(0) rotate(-5deg);
+      }
+      50% {
+        transform: translateY(-20px) rotate(5deg);
+      }
+    }
+
+    .floating-pumpkin {
+      position: absolute;
+      z-index: 45;
+      animation: floatPumpkin 5s ease-in-out infinite;
+    }
+
+    .pumpkin-1 {
+      left: -20%;
+      width: 300px;
+      top: -12%;
+      animation-delay: 0s;
+    }
+
+    .pumpkin-2 {
+      right: 5%;
+      width: 250px;
+      bottom: 60%;
+      animation-delay: 1.5s;
+    }
+
+    .pumpkin-3 {
+      left: -35%;
+      bottom: 22%;
+      width: 260px;
+      animation-delay: 3s;
+    } 
+
+    @keyframes floatPumpkin {
+      0%, 100% {
+        transform: translateY(0) rotate(3deg);
+      }
+      50% {
+        transform: translateY(-15px) rotate(-3deg);
+      }
+    }
+
+    .floating-ghost {
+      position: absolute;
+      z-index: 45;
+      animation: floatGhost 7s ease-in-out infinite;
+      opacity: 0.9;
+    }
+
+    .ghost-1 {
+      left: 125%;
+      top: -13%;
+      width: 180px;
+      animation-delay: 1s;
+    }
+
+    .ghost-2 {
+      right:-15%;
+      top: 72%;
+      width: 150px;
+      animation-delay: 3.5s;
+    }
+
+    .ghost-3 {
+      right: 25%;
+      bottom: 2%;
+      width: 200px;
+      animation-delay: 2s;
+    }
+
+    @keyframes floatGhost {
+      0%, 100% {
+        transform: translateY(0) translateX(0) rotate(2deg);
+      }
+      50% {
+        transform: translateY(-25px) translateX(15px) rotate(-2deg);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+  <!-- Audio elements -->
+  <audio id="beep1" src="beep.wav" preload="auto"></audio>
+  <audio id="beep2" src="beep.wav" preload="auto"></audio>
+  <audio id="beep3" src="beep.wav" preload="auto"></audio>
+  <audio id="cameraSound" src="shutter.mp3" preload="auto"></audio>
+  <audio id="backgroundMusic" src="spooky.mp3" loop></audio>
+
+  <div class="relative w-full h-screen flex flex-col bg-cover bg-center bg-no-repeat" style="background-image: url('background-photo.webp');">
+
+    <!-- Header -->
+    <header class="absolute top-0 left-0 w-full p-4 z-50 flex items-center">
+      <div class="flex-none">
+        <img src="image.png" alt="Muso Logo" class="h-16 w-auto" />
+      </div>
+      <div class="flex-grow text-center">
+        <h1 class="font-creepster text-5xl md:text-6xl text-orange-400 tracking-wider" style="text-shadow: 6px 6px 0 #8A0303, 10px 10px 0 rgba(0,0,0,0.95); -webkit-text-stroke: 3px rgba(51,0,102,0.9); margin:0;">
+          Muso's Spooky Make-a-Snap
+        </h1>
+      </div>
+      <div class="flex-none" style="width:64px;"></div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-12 gap-4 w-full h-full pt-24 px-4">
+
+      <!-- Controls -->
+      <div id="controls" class="col-span-2 flex flex-col items-center justify-center gap-1">
+        <button id="start-btn" class="action-button w-4/5">
+          <img src="image-removebg-preview (1).png" alt="Start" />
+        </button>
+        <button id="capture-btn" class="action-button w-4/5" disabled>
+          <img src="image-removebg-preview (2).png" alt="Capture" />
+        </button>
+        <button id="recapture-btn" class="action-button w-4/5" disabled>
+          <img src="image-removebg-preview (3).png" alt="Recapture" />
+        </button>
+      </div>
+
+      <!-- Center Video Feed -->
+      <main class="col-span-7 flex flex-col justify-center items-center h-full">
+        <div class="frame-container">
+          <video id="video-feed" playsinline></video>
+          <img src="Frame.png" alt="Spooky Frame" class="frame-image" />
+          <img src="Witch.png" alt="Floating Witch" class="floating-witch" />
+          <img src="Pumpkin.png" alt="Floating Pumpkin 1" class="floating-pumpkin pumpkin-1" />
+          <img src="Pumpkin.png" alt="Floating Pumpkin 2" class="floating-pumpkin pumpkin-2" />
+          <img src="Pumpkin.png" alt="Floating Pumpkin 3" class="floating-pumpkin pumpkin-3" />
+          <img src="Floating ghost.png" alt="Floating Ghost 1" class="floating-ghost ghost-1" />
+          <img src="Floating ghost.png" alt="Floating Ghost 2" class="floating-ghost ghost-2" />
+          <img src="Floating ghost.png" alt="Floating Ghost 3" class="floating-ghost ghost-3" />
+        </div>
+      </main>
+
+      <!-- Photo Strip -->
+      <aside class="col-span-3 flex justify-center items-start pt-16 pr-4">
+        <div id="photo-strip">
+          <div class="photo-wrapper" id="photo-wrapper-1">
+            <img id="photo-1" class="photo-slot" />
+            <img src="gold frame.png" class="photo-frame-overlay" />
+          </div>
+          <div class="photo-wrapper" id="photo-wrapper-2">
+            <img id="photo-2" class="photo-slot" />
+            <img src="gold frame.png" class="photo-frame-overlay" />
+          </div>
+          <div class="photo-wrapper" id="photo-wrapper-3">
+            <img id="photo-3" class="photo-slot" />
+            <img src="gold frame.png" class="photo-frame-overlay" />
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Hidden canvas -->
+  <canvas id="photo-canvas" style="display: none;"></canvas>
+
+  <!-- Audio elements -->
+  <audio id="beep1" src="beep.wav" preload="auto"></audio>
+  <audio id="beep2" src="beep.wav" preload="auto"></audio>
+  <audio id="beep3" src="beep.wav" preload="auto"></audio>
+  <audio id="cameraSound" src="shutter.mp3" preload="auto"></audio>
+
+  <!-- JavaScript -->
+  <script>
+    const videoElement = document.getElementById('video-feed');
+    const canvasElement = document.getElementById('photo-canvas');
+    const startButton = document.getElementById('start-btn');
+    const captureButton = document.getElementById('capture-btn');
+    const recaptureButton = document.getElementById('recapture-btn');
+    const photoSlots = [
+      document.getElementById('photo-1'),
+      document.getElementById('photo-2'),
+      document.getElementById('photo-3'),
+    ];
+    const beepSounds = [
+      document.getElementById('beep1'),
+      document.getElementById('beep2'),
+      document.getElementById('beep3')
+    ];
+    const cameraSound = document.getElementById('cameraSound');
+
+    let stream;
+    let captureCount = 0;
+    
+    // Background music control
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    
+    // Function to start background music
+    async function playBackgroundMusic() {
+        try {
+            backgroundMusic.volume = 0.8;  // Set volume to 80%
+            await backgroundMusic.play();
+            console.log('Background music started');
+        } catch (error) {
+            console.error('Failed to play background music:', error);
+        }
+    }
+
+    // Try to play music when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        backgroundMusic.load();  // Make sure the audio is loaded
+    });
+
+    // Play music on any user interaction
+    const playAttempt = () => {
+        playBackgroundMusic();
+        document.removeEventListener('click', playAttempt);
+        document.removeEventListener('touchstart', playAttempt);
+        document.removeEventListener('keydown', playAttempt);
+    };
+
+    document.addEventListener('click', playAttempt);
+    document.addEventListener('touchstart', playAttempt);
+    document.addEventListener('keydown', playAttempt);
+
+    async function startCamera() {
+      if (stream) return;
+      try {
+        // Try to play background music when camera starts
+        playBackgroundMusic();
+        
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+        videoElement.srcObject = stream;
+        videoElement.play();
+        startButton.disabled = true;
+        captureButton.disabled = false;
+      } catch (err) {
+        console.error("CRITICAL ERROR accessing the camera: ", err.name, err.message);
+        alert("Could not access the camera. Please check your browser permissions.");
+      }
+    }
+
+    // Create countdown overlay
+    const countdownOverlay = document.createElement('div');
+    countdownOverlay.style.cssText = `
+      position: fixed;
+      top: 60%;
+      left: 45%;
+      transform: translate(-50%, -50%);
+      font-size: 120px;
+      font-weight: bold;
+      color:#8A0303;
+      text-shadow: 4px 4px 0 #000;
+      z-index: 1000;
+      font-family: 'Creepster', cursive;
+      opacity: 0;
+      transition: opacity 0.3s;
+    `;
+    document.body.appendChild(countdownOverlay);
+
+    async function capturePhoto() {
+      if (captureCount >= 4) return;
+      
+      // Disable buttons during countdown
+      captureButton.disabled = true;
+      recaptureButton.disabled = true;
+
+      // Start countdown
+      for(let i = 3; i > 0; i--) {
+        countdownOverlay.textContent = i;
+        countdownOverlay.style.opacity = '1';
+        try {
+          // Use a different beep sound for each number to prevent overlapping
+          const beep = beepSounds[i-1];
+          beep.volume = 0.5; // Reduce volume to 50%
+          beep.currentTime = 0;
+          await beep.play();
+        } catch (err) {
+          console.log('Audio playback failed:', err);
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      countdownOverlay.style.opacity = '0';
+      try {
+        cameraSound.volume = 0.4; // Reduce volume to 50%
+        cameraSound.currentTime = 0;
+        await cameraSound.play();
+      } catch (err) {
+        console.log('Camera sound playback failed:', err);
+      }
+
+      // Take the photo
+      const context = canvasElement.getContext('2d');
+      canvasElement.width = videoElement.videoWidth;
+      canvasElement.height = videoElement.videoHeight;
+      context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+      const dataUrl = canvasElement.toDataURL('image/png');
+      photoSlots[captureCount].src = dataUrl;
+      captureCount++;
+
+      // Re-enable buttons as appropriate
+      recaptureButton.disabled = captureCount === 0;
+      captureButton.disabled = captureCount >= 4;
+
+      // Show download button when all 3 photos are taken
+      if (captureCount === 3) {
+        createDownloadButton();
+      }
+    }
+
+    function createPhotoStrip() {
+      // Create a canvas for the final photo strip
+      const stripCanvas = document.createElement('canvas');
+      const ctx = stripCanvas.getContext('2d');
+      
+      // Set dimensions for the photo strip (adjust as needed)
+      stripCanvas.width = 800;
+      stripCanvas.height = 1200;
+      
+      // Fill background with dark color
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+      // Draw each photo
+      for(let i = 0; i < 3; i++) {
+        const photo = photoSlots[i];
+        if (photo.src) {
+          // Calculate position for each photo
+          const y = i * (stripCanvas.height / 3);
+          
+          // Draw photo only, no frame
+          ctx.drawImage(photo, 
+            0, y, stripCanvas.width, stripCanvas.height / 3);
+        }
+      }
+
+      // Add some text at the bottom
+      ctx.fillStyle = '#ff6b00';
+      ctx.font = 'bold 30px Creepster';
+      ctx.textAlign = 'center';
+      ctx.fillText("Muso's Spooky Make-a-Snap", stripCanvas.width / 2, stripCanvas.height - 20);
+
+      return stripCanvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    function createDownloadButton() {
+      const downloadBtn = document.createElement('button');
+      downloadBtn.innerHTML = '⬇️ Download Your Spooky Photos';
+      downloadBtn.className = 'action-button bg-orange-600 text-white py-4 px-8 rounded-lg hover:bg-orange-700 transition-colors font-creepster text-2xl';
+      downloadBtn.style.position = 'absolute';
+      downloadBtn.style.left = '50%';
+      downloadBtn.style.transform = 'translateX(-50%)';
+      downloadBtn.style.bottom = '20px';
+      downloadBtn.style.zIndex = '100';
+      downloadBtn.style.whiteSpace = 'nowrap';
+      downloadBtn.style.textShadow = '2px 2px 0 #8A0303';
+      downloadBtn.style.border = '2px solid #8A0303';
+      downloadBtn.style.boxShadow = '0 0 15px rgba(255, 107, 0, 0.5)';
+      
+      downloadBtn.onclick = function() {
+        const dataUrl = createPhotoStrip();
+        const link = document.createElement('a');
+        link.download = 'spooky-photo-strip.jpg';
+        link.href = dataUrl;
+        link.click();
+      };
+
+      // Add button to frame container
+      const frameContainer = document.querySelector('.frame-container');
+      frameContainer.appendChild(downloadBtn);
+    }
+
+    function recapturePhotos() {
+      if (captureCount === 0) return;
+      captureCount--;
+      photoSlots[captureCount].src = '';
+      recaptureButton.disabled = captureCount === 0;
+      captureButton.disabled = false;
+    }
+
+    startButton.addEventListener('click', startCamera);
+    captureButton.addEventListener('click', capturePhoto);
+    recaptureButton.addEventListener('click', recapturePhotos);
+  </script>
+</body>
+</html>
