@@ -219,6 +219,102 @@
         transform: translateY(-25px) translateX(15px) rotate(-2deg);
       }
     }
+
+    /* Email Modal Styles */
+    .email-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .email-modal-content {
+      background: linear-gradient(135deg, #8B0000, #2D1B69);
+      padding: 2rem;
+      border-radius: 15px;
+      border: 3px solid #FF6B00;
+      box-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .email-input {
+      width: 100%;
+      padding: 12px;
+      margin: 1rem 0;
+      border: 2px solid #FF6B00;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+    }
+
+    .email-input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .modal-button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Creepster', cursive;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .send-button {
+      background: #FF6B00;
+      color: white;
+    }
+
+    .send-button:hover {
+      background: #FF8C00;
+      transform: scale(1.05);
+    }
+
+    .cancel-button {
+      background: #666;
+      color: white;
+    }
+
+    .cancel-button:hover {
+      background: #888;
+      transform: scale(1.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading-spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #FF6B00;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -299,12 +395,6 @@
   <!-- Hidden canvas -->
   <canvas id="photo-canvas" style="display: none;"></canvas>
 
-  <!-- Audio elements -->
-  <audio id="beep1" src="beep.wav" preload="auto"></audio>
-  <audio id="beep2" src="beep.wav" preload="auto"></audio>
-  <audio id="beep3" src="beep.wav" preload="auto"></audio>
-  <audio id="cameraSound" src="shutter.mp3" preload="auto"></audio>
-
   <!-- JavaScript -->
   <script>
     const videoElement = document.getElementById('video-feed');
@@ -333,7 +423,7 @@
     // Function to start background music
     async function playBackgroundMusic() {
         try {
-            backgroundMusic.volume = 0.8;  // Set volume to 80%
+            backgroundMusic.volume = 0.8;
             await backgroundMusic.play();
             console.log('Background music started');
         } catch (error) {
@@ -343,7 +433,7 @@
 
     // Try to play music when the page loads
     document.addEventListener('DOMContentLoaded', () => {
-        backgroundMusic.load();  // Make sure the audio is loaded
+        backgroundMusic.load();
     });
 
     // Play music on any user interaction
@@ -361,7 +451,6 @@
     async function startCamera() {
       if (stream) return;
       try {
-        // Try to play background music when camera starts
         playBackgroundMusic();
         
         stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
@@ -405,9 +494,8 @@
         countdownOverlay.textContent = i;
         countdownOverlay.style.opacity = '1';
         try {
-          // Use a different beep sound for each number to prevent overlapping
           const beep = beepSounds[i-1];
-          beep.volume = 0.5; // Reduce volume to 50%
+          beep.volume = 0.5;
           beep.currentTime = 0;
           await beep.play();
         } catch (err) {
@@ -417,7 +505,7 @@
       }
       countdownOverlay.style.opacity = '0';
       try {
-        cameraSound.volume = 0.4; // Reduce volume to 50%
+        cameraSound.volume = 0.4;
         cameraSound.currentTime = 0;
         await cameraSound.play();
       } catch (err) {
@@ -437,39 +525,30 @@
       recaptureButton.disabled = captureCount === 0;
       captureButton.disabled = captureCount >= 4;
 
-      // Show download button when all 3 photos are taken
+      // Show action buttons when all 3 photos are taken
       if (captureCount === 3) {
-        createDownloadButton();
+        createActionButtons();
       }
     }
 
     function createPhotoStrip() {
-      // Create a canvas for the final photo strip
       const stripCanvas = document.createElement('canvas');
       const ctx = stripCanvas.getContext('2d');
       
-      // Set dimensions for the photo strip (adjust as needed)
       stripCanvas.width = 800;
       stripCanvas.height = 1200;
       
-      // Fill background with dark color
       ctx.fillStyle = '#1a1a1a';
       ctx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
 
-      // Draw each photo
       for(let i = 0; i < 3; i++) {
         const photo = photoSlots[i];
         if (photo.src) {
-          // Calculate position for each photo
           const y = i * (stripCanvas.height / 3);
-          
-          // Draw photo only, no frame
-          ctx.drawImage(photo, 
-            0, y, stripCanvas.width, stripCanvas.height / 3);
+          ctx.drawImage(photo, 0, y, stripCanvas.width, stripCanvas.height / 3);
         }
       }
 
-      // Add some text at the bottom
       ctx.fillStyle = '#ff6b00';
       ctx.font = 'bold 30px Creepster';
       ctx.textAlign = 'center';
@@ -478,32 +557,268 @@
       return stripCanvas.toDataURL('image/jpeg', 0.9);
     }
 
-    function createDownloadButton() {
+    function createActionButtons() {
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.position = 'absolute';
+      buttonContainer.style.left = '50%';
+      buttonContainer.style.transform = 'translateX(-50%)';
+      buttonContainer.style.bottom = '20px';
+      buttonContainer.style.zIndex = '100';
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.gap = '20px';
+      buttonContainer.style.flexWrap = 'wrap';
+      buttonContainer.style.justifyContent = 'center';
+
+      // Download Button
       const downloadBtn = document.createElement('button');
-      downloadBtn.innerHTML = '⬇️ Download Your Spooky Photos';
+      downloadBtn.innerHTML = '⬇️ Download';
       downloadBtn.className = 'action-button bg-orange-600 text-white py-4 px-8 rounded-lg hover:bg-orange-700 transition-colors font-creepster text-2xl';
-      downloadBtn.style.position = 'absolute';
-      downloadBtn.style.left = '50%';
-      downloadBtn.style.transform = 'translateX(-50%)';
-      downloadBtn.style.bottom = '20px';
-      downloadBtn.style.zIndex = '100';
       downloadBtn.style.whiteSpace = 'nowrap';
       downloadBtn.style.textShadow = '2px 2px 0 #8A0303';
       downloadBtn.style.border = '2px solid #8A0303';
       downloadBtn.style.boxShadow = '0 0 15px rgba(255, 107, 0, 0.5)';
       
       downloadBtn.onclick = function() {
-        const dataUrl = createPhotoStrip();
-        const link = document.createElement('a');
-        link.download = 'spooky-photo-strip.jpg';
-        link.href = dataUrl;
-        link.click();
+  const dataUrl = createPhotoStrip(); // Keep original quality for download
+  const link = document.createElement('a');
+  link.download = 'spooky-photo-strip.jpg';
+  link.href = dataUrl;
+  link.click();
+};
+
+      // Email Button
+      const emailBtn = document.createElement('button');
+      emailBtn.innerHTML = '📧 Send by Email';
+      emailBtn.className = 'action-button bg-green-600 text-white py-4 px-8 rounded-lg hover:bg-green-700 transition-colors font-creepster text-2xl';
+      emailBtn.style.whiteSpace = 'nowrap';
+      emailBtn.style.textShadow = '2px 2px 0 #8A0303';
+      emailBtn.style.border = '2px solid #8A0303';
+      emailBtn.style.boxShadow = '0 0 15px rgba(0, 255, 0, 0.5)';
+      
+      emailBtn.onclick = function() {
+        showEmailModal();
       };
 
-      // Add button to frame container
+      buttonContainer.appendChild(downloadBtn);
+      buttonContainer.appendChild(emailBtn);
+
       const frameContainer = document.querySelector('.frame-container');
-      frameContainer.appendChild(downloadBtn);
+      frameContainer.appendChild(buttonContainer);
     }
+
+    function showEmailModal() {
+      const modal = document.createElement('div');
+      modal.className = 'email-modal';
+      modal.innerHTML = `
+        <div class="email-modal-content">
+          <h2 class="font-creepster text-3xl text-center text-orange-400 mb-4">Send to Email</h2>
+          <p class="text-center mb-4">Enter your email address to receive your spooky photo strip!</p>
+          <input type="email" id="email-input" class="email-input" placeholder="your@email.com" required>
+          <div class="modal-buttons">
+            <button class="modal-button cancel-button" id="cancel-email">Cancel</button>
+            <button class="modal-button send-button" id="send-email">Send</button>
+          </div>
+          <div id="email-status" class="text-center mt-4 hidden"></div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      document.getElementById('cancel-email').addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+
+      document.getElementById('send-email').addEventListener('click', sendEmail);
+
+      document.getElementById('email-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendEmail();
+        }
+      });
+
+      // Focus on input
+      document.getElementById('email-input').focus();
+    }
+
+    async function sendEmail() {
+  const emailInput = document.getElementById('email-input');
+  const email = emailInput.value.trim();
+  const statusDiv = document.getElementById('email-status');
+  
+  // Basic email validation
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    statusDiv.textContent = 'Please enter a valid email address!';
+    statusDiv.className = 'text-center mt-4 text-red-400';
+    statusDiv.classList.remove('hidden');
+    return;
+  }
+
+  const sendButton = document.getElementById('send-email');
+  sendButton.disabled = true;
+  sendButton.innerHTML = '<span class="loading-spinner"></span>Sending...';
+
+  try {
+    // Create the photo strip with compression
+    const photoStripDataUrl = await createCompressedPhotoStrip();
+    
+    console.log('Sending email to:', email);
+    
+    // Send to our backend
+    const response = await fetch('/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        photo_data: photoStripDataUrl
+      }),
+    });
+
+    const result = await response.json();
+    console.log('Backend response:', result);
+
+    if (result.success) {
+      statusDiv.textContent = '✅ Photo strip sent successfully! Check your email (including spam folder).';
+      statusDiv.className = 'text-center mt-4 text-green-400';
+      statusDiv.classList.remove('hidden');
+      
+      // Close modal after 4 seconds
+      setTimeout(() => {
+        const modal = document.querySelector('.email-modal');
+        if (modal) document.body.removeChild(modal);
+      }, 4000);
+    } else {
+      throw new Error(result.error || 'Failed to send email');
+    }
+  } catch (error) {
+    console.error('Error sending email:', error);
+    statusDiv.innerHTML = '❌ Failed to send email. Please try again.';
+    statusDiv.className = 'text-center mt-4 text-red-400';
+    statusDiv.classList.remove('hidden');
+    sendButton.disabled = false;
+    sendButton.innerHTML = 'Send';
+  }
+}
+
+// Compressed version of createPhotoStrip
+// Function to create the final compressed photo strip with the photo positioned correctly
+async function createCompressedPhotoStrip() {
+  return new Promise((resolve) => {
+    const stripCanvas = document.createElement('canvas');
+    const ctx = stripCanvas.getContext('2d');
+
+    // Match visual proportions from the webpage
+    stripCanvas.width = 600;
+    stripCanvas.height = 900;
+
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+    const frameImage = new Image();
+    frameImage.src = 'gold frame.png';
+
+    frameImage.onload = () => {
+      let imagesLoaded = 0;
+
+      function checkAllLoaded() {
+        imagesLoaded++;
+        if (imagesLoaded === 3) {
+          ctx.fillStyle = '#ff6b00';
+          ctx.font = 'bold 20px Creepster';
+          ctx.textAlign = 'center';
+          ctx.fillText("Muso's Spooky Make-a-Snap", stripCanvas.width / 2, stripCanvas.height - 15);
+          const compressedDataUrl = stripCanvas.toDataURL('image/jpeg', 0.9);
+          resolve(compressedDataUrl);
+        }
+      }
+
+      const slotHeight = stripCanvas.height / 3; // 300px per slot
+
+      for (let i = 0; i < 3; i++) {
+        const photo = photoSlots[i];
+        const frameY = i * slotHeight;
+
+        if (photo.src) {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const frameMarginX = 90;
+            const frameMarginY = 55;
+            const destW = stripCanvas.width - frameMarginX * 2;
+            const destH = slotHeight - frameMarginY * 2;
+            const destX = frameMarginX;
+            const destY = frameY + frameMarginY;
+
+            // Maintain object-fit: cover behavior
+            const srcW = img.naturalWidth;
+            const srcH = img.naturalHeight;
+            const srcRatio = srcW / srcH;
+            const destRatio = destW / destH;
+
+            let sx, sy, sWidth, sHeight;
+            if (srcRatio > destRatio) {
+              sHeight = srcH;
+              sWidth = sHeight * destRatio;
+              sx = (srcW - sWidth) / 2;
+              sy = 0;
+            } else {
+              sWidth = srcW;
+              sHeight = sWidth / destRatio;
+              sx = 0;
+              sy = (srcH - sHeight) / 2;
+            }
+
+            // --- MIRRORING START ---
+            ctx.save();
+            ctx.translate(destX + destW / 2, destY + destH / 2);
+            ctx.scale(-1, 1); // horizontal flip
+            ctx.drawImage(img, sx, sy, sWidth, sHeight, -destW / 2, -destH / 2, destW, destH);
+            ctx.restore();
+            // --- MIRRORING END ---
+
+            // Draw frame on top
+            ctx.drawImage(frameImage, 0, frameY, stripCanvas.width, slotHeight);
+            checkAllLoaded();
+          };
+          img.src = photo.src;
+        } else {
+          ctx.drawImage(frameImage, 0, frameY, stripCanvas.width, slotHeight);
+          checkAllLoaded();
+        }
+      }
+    };
+  });
+}
+
+
+
+// Keep the original for download (optional)
+function createPhotoStrip() {
+  const stripCanvas = document.createElement('canvas');
+  const ctx = stripCanvas.getContext('2d');
+  
+  stripCanvas.width = 800;
+  stripCanvas.height = 1200;
+  
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+  for(let i = 0; i < 3; i++) {
+    const photo = photoSlots[i];
+    if (photo.src) {
+      const y = i * (stripCanvas.height / 3);
+      ctx.drawImage(photo, 0, y, stripCanvas.width, stripCanvas.height / 3);
+    }
+  }
+
+  ctx.fillStyle = '#ff6b00';
+  ctx.font = 'bold 30px Creepster';
+  ctx.textAlign = 'center';
+  ctx.fillText("Muso's Spooky Make-a-Snap", stripCanvas.width / 2, stripCanvas.height - 20);
+
+  return stripCanvas.toDataURL('image/jpeg', 0.9);
+}
 
     function recapturePhotos() {
       if (captureCount === 0) return;
@@ -511,6 +826,12 @@
       photoSlots[captureCount].src = '';
       recaptureButton.disabled = captureCount === 0;
       captureButton.disabled = false;
+
+      // Remove action buttons if they exist
+      const buttonContainer = document.querySelector('.frame-container > div');
+      if (buttonContainer && buttonContainer.style.position === 'absolute') {
+        buttonContainer.remove();
+      }
     }
 
     startButton.addEventListener('click', startCamera);
