@@ -102,9 +102,9 @@ app.post('/send-email', async (req, res) => {
         const wrapperWidth = Math.round(finalFrameWidth / 1.4);
         const wrapperHeight = Math.round(finalFrameHeight / 1.3);
 
-        // Photo slot: 55% width, 80% height of wrapper, centered within frame (decreased height, increased width to fit gold frame)
-        const photoWidth = Math.round(wrapperWidth * 0.55);
-        const photoHeight = Math.round(wrapperHeight * 0.8);
+        // Photo slot: 60% width, 70% height of wrapper, centered within frame (increased width, decreased height to fit gold frame)
+        const photoWidth = Math.round(wrapperWidth * 0.6);
+        const photoHeight = Math.round(wrapperHeight * 0.7);
         const photoLeft = Math.round((finalFrameWidth - photoWidth) / 2);
         const photoTop = Math.round((finalFrameHeight - photoHeight) / 2);
 
@@ -143,8 +143,8 @@ app.post('/send-email', async (req, res) => {
         return frameWithPhoto;
       })
     );
-    // Calculate minimal strip dimensions based on frames
-    const stripWidth = finalFrameWidth;
+    // Calculate minimal strip dimensions based on frames (increase width by 20%)
+    const stripWidth = Math.round(finalFrameWidth * 1.2);
     const stripHeight = finalFrameHeight * processedImages.length;
 
     let composites = processedImages.map((img, i) => ({
