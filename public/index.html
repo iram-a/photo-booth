@@ -67,9 +67,7 @@
   <div class="relative w-full h-screen flex flex-col bg-cover bg-center bg-no-repeat" style="background-image: url('background-photo.webp');">
     <!-- Header -->
     <header class="absolute top-0 left-0 w-full p-4 z-50 flex items-center">
-      <div class="flex-none">
-        <img src="images/image.png" alt="Muso Logo" class="h-16 w-auto" />
-      </div>
+      <div class="flex-none" style="width:64px;"></div>
       <div class="flex-grow text-center">
         <h1 class="font-creepster text-5xl md:text-6xl text-orange-400 tracking-wider" style="text-shadow: 6px 6px 0 #8A0303, 10px 10px 0 rgba(0,0,0,0.95); -webkit-text-stroke: 3px rgba(51,0,102,0.9); margin:0;">
           Muso's Spooky Make-a-Snap
@@ -82,13 +80,13 @@
       <!-- Controls -->
       <div id="controls" class="col-span-2 flex flex-col items-center justify-center gap-1">
         <button id="start-btn" class="action-button w-4/5">
-          <img src="images/image-removebg-preview (1).png" alt="Start" />
+          <img src="images/image-removebg-preview (1).png" alt="Start" onclick="startCamera()" />
         </button>
         <button id="capture-btn" class="action-button w-4/5" disabled>
-          <img src="images/image-removebg-preview (2).png" alt="Capture" />
+          <img src="images/image-removebg-preview (2).png" alt="Capture" onclick="capturePhoto()" />
         </button>
         <button id="recapture-btn" class="action-button w-4/5" disabled>
-          <img src="images/image-removebg-preview (3).png" alt="Recapture" />
+          <img src="images/image-removebg-preview (3).png" alt="Recapture" onclick="recapturePhotos()" />
         </button>
       </div>
       <!-- Center Video Feed -->
