@@ -5,6 +5,7 @@ const path = require('path');
 const sgMail = require('@sendgrid/mail');
 const sharp = require('sharp');
 const fs = require('fs');
+const { createCanvas } = require('canvas');
 
 const app = express();
 
@@ -66,6 +67,12 @@ app.post('/send-email', async (req, res) => {
 
     const frameBuffer = fs.readFileSync(framePath);
 
+    // Make black background transparent to fix black lines
+    const transparentFrameBuffer = await sharp(frameBuffer)
+      .flatten({ background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+
     // Use client-provided display sizes for responsive sizing
     const clientDisplayFrameWidth = parseInt(displayFrameWidth, 10) || 400;
     const clientDisplayFrameHeight = parseInt(displayFrameHeight, 10) || 600;
@@ -73,11 +80,14 @@ app.post('/send-email', async (req, res) => {
 
     // Scale for DPR
     const scale = Math.min(Math.max(dpr, 1), 2);
-    const finalFrameWidth = Math.round(clientDisplayFrameWidth * scale);
-    const finalFrameHeight = Math.round(clientDisplayFrameHeight * scale);
+    let finalFrameWidth = Math.round(clientDisplayFrameWidth * scale);
+    let finalFrameHeight = Math.round(clientDisplayFrameHeight * scale);
+    // Increase frame size by 10% to make gold frame bigger
+    finalFrameWidth = Math.round(finalFrameWidth * 1.1);
+    finalFrameHeight = Math.round(finalFrameHeight * 1.1);
 
     // Resize frame to final size
-    const resizedFrameBuffer = await sharp(frameBuffer)
+    const resizedFrameBuffer = await sharp(transparentFrameBuffer)
       .resize(finalFrameWidth, finalFrameHeight, { fit: 'contain' })
       .png()
       .toBuffer();
@@ -92,9 +102,9 @@ app.post('/send-email', async (req, res) => {
         const wrapperWidth = Math.round(finalFrameWidth / 1.4);
         const wrapperHeight = Math.round(finalFrameHeight / 1.3);
 
-        // Photo slot: 55% width, 92% height of wrapper, centered within frame (slightly wider)
+        // Photo slot: 55% width, 80% height of wrapper, centered within frame (decreased height, increased width to fit gold frame)
         const photoWidth = Math.round(wrapperWidth * 0.55);
-        const photoHeight = Math.round(wrapperHeight * 0.92);
+        const photoHeight = Math.round(wrapperHeight * 0.8);
         const photoLeft = Math.round((finalFrameWidth - photoWidth) / 2);
         const photoTop = Math.round((finalFrameHeight - photoHeight) / 2);
 
@@ -103,38 +113,23 @@ app.post('/send-email', async (req, res) => {
           .png()
           .toBuffer();
 
-        // Create canvas with photo centered
-        const photoCanvas = await sharp({
-          create: {
-            width: finalFrameWidth,
-            height: finalFrameHeight,
-            channels: 4,
-            background: { r: 255, g: 255, b: 255, alpha: 0 } // White background for photo canvas to avoid black lines
-          }
-        })
+        // Composite photo on frame (frame should have transparent or solid center for photo to show)
+        let frameWithPhoto = await sharp(resizedFrameBuffer)
           .composite([
             { input: resizedPhoto, top: photoTop, left: photoLeft }
           ])
           .png()
           .toBuffer();
 
-        // Composite frame on top (assuming frame has transparent center)
-        let frameWithPhoto = await sharp(photoCanvas)
-          .composite([
-            { input: resizedFrameBuffer, top: 0, left: 0 }
-          ])
-          .png()
-          .toBuffer();
-
-        // Add decorations on the frame
+        // Add decorations on the frame (witch, pumpkin, and ghost per frame)
         let decorationComposites = [];
         if (index === 0 && witchResized) {
           decorationComposites.push({ input: witchResized, top: 10, left: finalFrameWidth - 160 });
         }
-        if (index === 1 && pumpkinResized) {
+        if (pumpkinResized) {
           decorationComposites.push({ input: pumpkinResized, top: finalFrameHeight - 130, left: 10 });
         }
-        if (index === 2 && ghostResized) {
+        if (ghostResized) {
           decorationComposites.push({ input: ghostResized, top: 20, left: 10 });
         }
 
@@ -158,15 +153,30 @@ app.post('/send-email', async (req, res) => {
       left: 0
     }));
 
+    // Create text overlay "MuSo spooky snap" (less wider)
+    const canvas = createCanvas(stripWidth, 100);
+    const ctx = canvas.getContext('2d');
+    ctx.font = 'bold 36px "Creepster", cursive';
+    ctx.fillStyle = '#ffcc00';
+    ctx.textAlign = 'center';
+    ctx.fillText('MuSo spooky snap', stripWidth / 2, 60);
+    const textBuffer = canvas.toBuffer('image/png');
+
+    const textHeight = 100;
+    const stripWithTextHeight = stripHeight + textHeight;
+
     const finalStrip = await sharp({
       create: {
         width: stripWidth,
-        height: stripHeight,
+        height: stripWithTextHeight,
         channels: 4,
         background: { r: 26, g: 26, b: 26, alpha: 1 } // Dark background
       }
     })
-      .composite(composites)
+      .composite([
+        ...composites,
+        { input: textBuffer, top: stripHeight, left: 0 }
+      ])
       .png()
       .toBuffer();
 
