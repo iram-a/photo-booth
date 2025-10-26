@@ -17,8 +17,8 @@
     .frame-container { max-width: 1070px; width: 100%; aspect-ratio: 4 / 3; position: relative; display: flex; justify-content: center; align-items: center; z-index: 20; }
     .frame-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; transform: rotate(90deg); pointer-events: none; z-index: 35; }
     #video-feed { position: absolute; top: 50%; left: 49%; width: 50%; height: 42%; object-fit: cover; transform: translate(-50%, -50%) scaleX(-1); border-radius: 50%; z-index: 40; background-color: #1a1a1a; }
-    .action-button { background: transparent; border: none; padding: 0; cursor: pointer; transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out; }
-    .action-button img { width: 100%; height: auto; }
+    .action-button { background: transparent; border: none; padding: 0; cursor: pointer; transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out; position: relative; }
+    .action-button img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
     .action-button:hover:not(:disabled) { transform: scale(1.07); filter: drop-shadow(0 0 10px rgba(255, 180, 80, 0.7)); }
     .action-button:active:not(:disabled) { transform: scale(1.02); }
     .action-button:disabled { cursor: not-allowed; filter: grayscale(80%) opacity(0.5); }
@@ -69,24 +69,26 @@
     <header class="absolute top-0 left-0 w-full p-4 z-50 flex items-center">
       <div class="flex-none" style="width:64px;"></div>
       <div class="flex-grow text-center">
-        <h1 class="font-creepster text-5xl md:text-6xl text-orange-400 tracking-wider" style="text-shadow: 6px 6px 0 #8A0303, 10px 10px 0 rgba(0,0,0,0.95); -webkit-text-stroke: 3px rgba(51,0,102,0.9); margin:0;">
+        <h1 class="font-creepster text-5xl md:text-6xl text-black tracking-wider" style="text-shadow: 6px 6px 0 #8A0303, 10px 10px 0 rgba(0,0,0,0.95); -webkit-text-stroke: 3px rgba(51,0,102,0.9); margin:0;">
           Muso's Spooky Make-a-Snap
         </h1>
       </div>
-      <div class="flex-none" style="width:64px;"></div>
+      <div class="flex-none" style="width:64px;">
+        <button id="restart-btn" class="bg-red-600 text-white px-2 py-1 rounded font-creepster text-xs hover:bg-red-700" title="Restart App">Restart</button>
+      </div>
     </header>
     <!-- Main Content -->
     <div class="grid grid-cols-12 gap-4 w-full h-full pt-24 px-4">
       <!-- Controls -->
-      <div id="controls" class="col-span-2 flex flex-col items-center justify-center gap-1">
-        <button id="start-btn" class="action-button w-4/5">
-          <img src="images/image-removebg-preview (1).png" alt="Start" onclick="startCamera()" />
+      <div id="controls" class="col-span-2 flex flex-col items-center justify-center gap-6">
+        <button id="start-btn" class="action-button w-full h-40">
+          <img src="images/start.png" alt="Start" />
         </button>
-        <button id="capture-btn" class="action-button w-4/5" disabled>
-          <img src="images/image-removebg-preview (2).png" alt="Capture" onclick="capturePhoto()" />
+        <button id="capture-btn" class="action-button w-full h-40" disabled>
+          <img src="images/capture.png" alt="Capture" />
         </button>
-        <button id="recapture-btn" class="action-button w-4/5" disabled>
-          <img src="images/image-removebg-preview (3).png" alt="Recapture" onclick="recapturePhotos()" />
+        <button id="recapture-btn" class="action-button w-full h-40" disabled>
+          <img src="images/recapture.png" alt="Recapture" />
         </button>
       </div>
       <!-- Center Video Feed -->
@@ -385,6 +387,7 @@ function loadImage(src) {
           setTimeout(() => {
             const modal = document.querySelector('.email-modal');
             if (modal) document.body.removeChild(modal);
+            restartApp();
           }, 4000);
         } else {
           throw new Error(result.error || 'Failed to send email');
@@ -409,6 +412,28 @@ function loadImage(src) {
         buttonContainer.remove();
       }
     }
+    function restartApp() {
+      captureCount = 0;
+      photoSlots.forEach(slot => slot.src = '');
+      const buttonContainer = document.querySelector('.frame-container > div');
+      if (buttonContainer && buttonContainer.style.position === 'absolute') {
+        buttonContainer.remove();
+      }
+      if (stream) {
+        // Camera is on, enable capture
+        startButton.disabled = true;
+        captureButton.disabled = false;
+        recaptureButton.disabled = true;
+      } else {
+        // Camera is off, enable start
+        startButton.disabled = false;
+        captureButton.disabled = true;
+        recaptureButton.disabled = true;
+      }
+    }
+
+    document.getElementById('restart-btn').addEventListener('click', restartApp);
+
     startButton.addEventListener('click', startCamera);
     captureButton.addEventListener('click', capturePhoto);
     recaptureButton.addEventListener('click', recapturePhotos);

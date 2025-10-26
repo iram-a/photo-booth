@@ -1,4 +1,4 @@
-- [ ] Increase frame size by 20% in server/index.js
-- [ ] Add more ghost and pumpkin decorations (e.g., 2 ghosts and 2 pumpkins per strip)
-- [ ] Overlay "MuSo spooky snap" text within the strip area instead of below
-- [ ] Test the email functionality to verify changes
+- [x] Add restartApp() function to reset the app to initial state (captureCount=0, clear photo slots, re-enable start button, disable capture/recapture, remove action buttons).
+- [x] Modify sendEmail() to call restartApp() after successful email send.
+- [x] Add a small restart button in the top-right corner of the header.
+- [x] Add event listener for the restart button to call restartApp().

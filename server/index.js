@@ -153,9 +153,11 @@ app.post('/send-email', async (req, res) => {
       left: 0
     }));
 
-    // Create text overlay "MuSo spooky snap" (less wider)
+    // Create text overlay "MuSo spooky snap" on black background
     const canvas = createCanvas(stripWidth, 100);
     const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#000000'; // Black background
+    ctx.fillRect(0, 0, stripWidth, 100);
     ctx.font = 'bold 36px "Creepster", cursive';
     ctx.fillStyle = '#ffcc00';
     ctx.textAlign = 'center';
